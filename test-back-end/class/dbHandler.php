@@ -141,32 +141,6 @@ class DBHandler
         mysqli_close($db);
     }
 
-   /**
-    * This function retrieves a specified quantity of random items from a specific category in a
-    * database.
-    * 
-    * @param int quantity The number of random items to retrieve from the database.
-    * @param int idCategory The id of the category for which the random items are being fetched.
-    * 
-    * return an array of randomly selected items from the "items" table in the database, with a
-    * specified quantity and category ID.
-    */
-    public function getAllRandomn(int $quantity,int $idCategory){
-        $db = $this->connect();
-            $sql = $db->prepare("
-            SELECT * FROM items  
-            WHERE categoryID = $idCategory  
-            ORDER BY RAND ( )  
-            LIMIT $quantity
-            ");
-        $sql->execute();
-        $resultQuery = $sql->get_result();
-        $arrayData = [];
-        while($row = mysqli_fetch_assoc($resultQuery))array_push($arrayData,$row);
-        mysqli_close($db) ;
-        return $arrayData;
-    }
-
     /**
      * This PHP function deletes a row from a specified table based on a given condition.
      * 
