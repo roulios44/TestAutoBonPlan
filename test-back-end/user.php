@@ -16,6 +16,18 @@ switch($request_method){
             if(intval($request_URI[2])==0){
                 switch($request_URI[2]){
                     case "login":
+                        $email = $decode["email"];
+                        $password = $decode["password"];
+                        $dataUser = $DB->getInDB("*","user","email",$email);
+                        if(count($dataUser)<=0)echo("false");
+                        else{
+                            $encryptPasword = $dataUser[0]["password"];
+                            if(password_verify($password,$encryptPasword)){
+                                echo($dataUser[0]["id"]);
+                            }else{
+                                echo("false");
+                            }
+                        }
                         break;
                     case "register":
                         $name = $decode["name"];

@@ -60,7 +60,6 @@ export default{
            "password" : this.password, 
           }
 
-          console.log(userData)
           const req = await axios.post("http://localhost/user/register",userData)
           const res = await req.data
           console.log(res)
