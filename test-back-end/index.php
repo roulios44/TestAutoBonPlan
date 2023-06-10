@@ -1,5 +1,4 @@
 <?php
-
 header("Access-Control-Allow-Origin: *");
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Max-Age: 86400');    // cache for 1 day
@@ -11,8 +10,11 @@ switch($request[1]) {
             require(__DIR__ . "/user.php");
             break;
         case "calls" :
-            require __DIR__ . "/calls";
+            require __DIR__ . "/calls.php";
             break;
+        case "date" : 
+            require __DIR__ . "/dates.php";
+            break;    
         default:
             break;
     }

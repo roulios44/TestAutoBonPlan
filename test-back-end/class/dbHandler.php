@@ -43,8 +43,7 @@ class DBHandler
         }
         $columns = array_keys($data);
         $values = array_values($data);
-        $sql = "INSERT INTO $table (" . implode(',', $columns) . ") VALUES (\"" . implode("\", \"", $values) . "\" )";
-        error_log($sql);
+        $sql = "INSERT INTO `$table` (" . implode(',', $columns) . ") VALUES (\"" . implode("\", \"", $values) . "\" )";
         $stmt = $con->prepare($sql);
         if (($stmt = $con->prepare($sql))) {
             $stmt->execute();
@@ -56,7 +55,6 @@ class DBHandler
         mysqli_close($con);
         return $idCreateObject;
     }
-
     /**
      * This function retrieves data from a database table based on a specified parameter and condition.
      * 
@@ -120,6 +118,18 @@ class DBHandler
         return $arrayData;
     }
 
+    public function getBetween(string $toSelect,string $table,string $rowToSearch,string $min,string $max){
+        $db = $this->connect();
+        $query = "SELECT $toSelect FROM `$table` WHERE $rowToSearch BETWEEN '$min' AND '$max' ";
+        $sql = $db->prepare($query);
+        $sql->execute();
+        $resultQuery = $sql->get_result();
+        $arrayData = [];
+        while ($row = mysqli_fetch_assoc($resultQuery)) array_push($arrayData, $row);
+        mysqli_close($db);
+        return $arrayData;
+    }
+
     /**
      * This function updates a row in a database table with a new value based on a specified condition.
      * 
@@ -155,5 +165,18 @@ class DBHandler
         $stmt = $db->prepare("DELETE FROM $table WHERE $rowToSearch = ?");
         $stmt->execute([$condition]);
         mysqli_close($db) ;
+    }
+
+    public function getAllDates(){
+        $db = $this->connect();
+        $query = "SELECT DISTINCT DATE_FORMAT(date, '%Y-%m-%d') AS 'date' FROM `call` ORDER BY DATE(date) DESC;";
+
+        $sql = $db->prepare($query);
+        $sql->execute();
+        $resultQuery = $sql->get_result();
+        $arrayData = [];
+        while ($row = mysqli_fetch_assoc($resultQuery)) array_push($arrayData, $row);
+        mysqli_close($db);
+        return $arrayData;
     }
 }
