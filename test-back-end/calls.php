@@ -33,32 +33,33 @@ switch($request_method){
             if(count($request_URI)>2){
                 switch($request_URI[2]){
                     case "week":
-                        // $firstDate =  $request_URI[3];
-                        // $secondDate =  $request_URI[4];
+                        $firstDate =  $request_URI[3];
+                        $secondDate =  $request_URI[4];
     
-                        // // $stringFirstDate = $firstDate->format('Y-m-d');
-                        // // $stringSecondDate = $secondDate->format('Y-m-d');
+                        // $stringFirstDate = $firstDate->format('Y-m-d');
+                        // $stringSecondDate = $secondDate->format('Y-m-d');
 
-                        // $test = date_create($firstDate);
-                        // $dataFirstRange = [];
-                        // for($i=0;$i<7;$i++){
-                        //     $test->modify("-1 day");
-                        //     echo(json_encode($DB->getInDB("*","call","DATE(date)",$test->format('Y-m-d'))));
-                        // }
-                        // // $stringFirstDate = date_create($firstDate)->modify("-7 day")->format('Y-m-d') ;
-                        // // $stringSecondDate = date_create($secondDate)->modify("-7 day")->format('Y-m-d');
+                        $dataFirstRange =  $DB->getBetween("*","call","date", $firstDate,$secondDate);
+                        
+                        $stringFirstDate = date_create($firstDate)->modify("-7 day")->format('Y-m-d') ;
+                        $stringSecondDate = date_create($secondDate)->modify("-7 day")->format('Y-m-d');
     
-                        // // $dataSecondRange = $DB->getBetween("*","call","date", $stringFirstDate,$stringSecondDate);
-                        // // $dataToSend = [$dataFirstRange,$dataSecondRange];
-                        // // echo(json_encode($dataFirstRange));
+                        $dataSecondRange = $DB->getBetween("*","call","date", $stringFirstDate,$stringSecondDate);
+                        $dataToSend = [$dataFirstRange,$dataSecondRange];
+                        echo(json_encode($dataSecondRange));
                         break;
                     case "day":
+                        error_reporting(E_ALL);
+                        ini_set('display_error', 1);
                         $firstDate = $request_URI[3];
                         $secondDate = $request_URI[4];
                         $firstDateData = $DB->getInDB("*","call","DATE(date)",$firstDate);
                         $secondDateData = $DB->getInDB("*","call","DATE(date)",$secondDate);
-                        $dataToSend = [$firstDateData,$secondDateData];
+                        $dataToSend = [];
+                        array_push($dataToSend,$firstDateData);
+                        array_push($dataToSend,$secondDateData);
                         echo(json_encode($dataToSend));
+
                         break;
                     default:
                         echo($request_error);

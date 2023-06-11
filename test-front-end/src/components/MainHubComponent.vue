@@ -22,6 +22,13 @@
         </div>
     </div>
     <div>
+
+        <label>Comparer des semaines ? (par défaut ce sont des jours qui seront comparés)</label><br>
+        <input type="radio" v-bind:value="true" v-model="weeklyCompare" />
+        <label for="one">Oui</label>
+        <input type="radio" v-bind:value="false" v-model="weeklyCompare" />
+        <label for="two">Non</label><br>
+        <label v-if="weeklyCompare">A noter: les jours choisis correspondent aux 1er jours de la semaine à étudier</label><br v-if="weeklyCompare">
         <label for="firstDate">Choisisez la 1ere date à comparer</label>
         <input type="date" v-model="firstDate" name="firstDate" v-on:change="checkIfDateAvalaible(firstDate,true)"><br>
         <p v-if="!firstDateIn">Cette date na pas encore d'entrée dans la base de donnée</p>
@@ -35,6 +42,14 @@
                 type="ColumnChart"
                 :data="chartData"
                 :options="chartOptions"
+            />
+        </div>
+        <div>
+            <GChart
+                v-if="callTakenChartData"
+                type="BarChart"
+                :data="callTakenChartData"
+                :options="callTakenChartOptions"
             />
         </div>
     </div>
@@ -62,18 +77,22 @@ export default{
             secondDateIn:true,
             dataCall:null,
 
-            chartData: [
-        ['Year', 'Sales', 'Expenses', 'Profit'],
-        ['2014', 1000, 400, 200],
-        ['2015', 1170, 460, 250],
-        ['2016', 660, 1120, 300],
-        ['2017', 1030, 540, 350]
-      ],
+            weeklyCompare:false,
+            chartData: null,
             chartOptions: {
-        chart: {
-          title: 'Appels Reçus par concession',
-        }
-      },
+                title: "Nombre d'ppels Reçus par concession",
+            },
+
+            callTakenChartData: null,
+            callTakenChartOptions : {
+                    
+                    title: "Appels prit par concession (En %)",
+                    'width':800,
+                    'height':1000
+            }
+      
+
+
         }
     },
     components:{
@@ -127,10 +146,18 @@ export default{
         },
         async checkIfDateAvalaible(date,isFirst){
             if(this.allDates.includes(date)){
-                if(isFirst)this.firstDateIn = true
+                if(this.weeklyCompare){
+                    const dateParts = date.split("-");
+                    const dateEnd = new Date(dateParts[0], dateParts[1]-1, dateParts[2])
+                    dateEnd.setDate(dateEnd.getDate()+7)
+                    if(this.allDates.includes(await this.formatDate(dateEnd))){
+                        if(isFirst)this.firstDateIn = true
+                        else this.secondDateIn = true
+                    }
+                }
+                else if(isFirst)this.firstDateIn = true
                 else this.secondDateIn = true
-            }
-            else{
+            }else{
                 if(isFirst)this.firstDateIn = false
                 else this.secondDateIn = false
             }
@@ -140,8 +167,32 @@ export default{
             console.log("http://localhost/calls/day/" + this.firstDate + "/" + this.secondDate)
             const res = await req.data
             this.dataCall = await res
+            await this.callReceiveChart();
+            
+        },
+        async callReceiveChart(){
             let graphData = []
+            let callTaken = []
             this.dataCall[0].forEach(call => {
+                if(callTaken.find(item=>item.label===call.salePoint)){
+                    const index = callTaken.findIndex(item=>item.label===call.salePoint)
+                    if(call.duration==="00:00:00")callTaken[index].firstDateNoTake++
+                    else callTaken[index].firstDateTake++
+                }else{
+                    if(call.duration==="00:00:00"){
+                        callTaken.push({
+                        label:call.salePoint,
+                        "firstDateNoTake":1,
+                        "firstDateTake":0,
+                    })
+                    }else{
+                        callTaken.push({
+                        label:call.salePoint,
+                        "firstDateNoTake":0,
+                        "firstDateTake":1,
+                    })
+                    }
+                }
                 if(graphData.find(item=>item.label===call.salePoint)){
                     graphData[graphData.findIndex(item=>item.label===call.salePoint)].firstDateCall++
                 }
@@ -155,9 +206,26 @@ export default{
                         })
                 }
             });
-
-
             this.dataCall[1].forEach(call => {
+                if(callTaken.find(item=>item.label===call.salePoint)){
+                    const index = callTaken.findIndex(item=>item.label===call.salePoint)
+                    if(call.duration==="00:00:00")callTaken[index].secondDateNoTake++
+                    else callTaken[index].secondDateTake++
+                }else{
+                    if(call.duration==="00:00:00"){
+                        callTaken.push({
+                        label:call.salePoint,
+                        "secondDateNoTake":1,
+                        "secondDateTake":0,
+                    })
+                    }else{
+                        callTaken.push({
+                        label:call.salePoint,
+                        "secondDateNoTake":0,
+                        "secondDateTake":1,
+                    })
+                    }
+                }
                 if(graphData.find(item=>item.label===call.salePoint)){
                     graphData[graphData.findIndex(item=>item.label===call.salePoint)].secondDateCall++
                 }
@@ -170,25 +238,35 @@ export default{
                         })
                 }
             });
-
+            await this.makeGraph(graphData,callTaken)
+        },
+        async makeGraph(graphData,callTaken){
             graphData.forEach(call => {
                 if(call.secondDate==null)call.secondDate = this.secondDate
                 if(call.secondDateCall==null)call.secondDateCall = 0;
                 if(call.firstDate==null)call.firstDate = this.firstDate
                 if(call.firstDateCall==null)call.firstDateCall = 0
             });
-            /**
-             * REQUETE SQL POUR SELECTIONNER UNE PARTIE ENTRE 2 DATES : 
-             * SELECT * FROM `call` WHERE `date` BETWEEN 'date' ADN 'date' <- ici date c'est la 'date' c'est la date a rentrer pas la table
-             */
+
+            callTaken.forEach(call=>{
+                if(!call.secondDateTake)call.secondDateTake = 0
+                if(!call.secondDateNoTake)call.secondDateNoTake = 0;
+                if(!call.firstDateNoTake)call.firstDateNoTake = 0
+                if(!call.firstDateTake)call.firstDateTake = 0
+            })
             this.chartData = []
             this.chartData.push(["Concession",this.firstDate,this.secondDate])
             graphData.forEach(call => {
                 this.chartData.push([call.label,call.firstDateCall,call.secondDateCall])
             });
-
-        },
-          
+            this.callTakenChartData = []
+            this.callTakenChartData.push(["Concession",this.firstDate,this.secondDate])
+            callTaken.forEach(call=>{
+                const firstDatePercent = call.firstDateTake / (call.firstDateNoTake+call.firstDateTake)
+                const secondDatePercent = call.secondDateTake / (call.secondDateNoTake+call.secondDateTake)
+                this.callTakenChartData.push([call.label,Math.round(firstDatePercent*100),Math.round(secondDatePercent*100)])
+            })
+        }
     },
     async mounted(){
         const date = new Date()

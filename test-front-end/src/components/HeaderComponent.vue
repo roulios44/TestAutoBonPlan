@@ -11,6 +11,12 @@
         <li>Disconnected</li>
       </ul>
     </transition>
+    <div class="logo">
+      <img src="@/assets/logo.png">
+    </div>
+    <div class="sectionTitle">
+      <h1>Suivi Hebdo</h1>
+    </div>
   </div>
 </template>
 
@@ -80,6 +86,11 @@ ul{
 
 .header{
   display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: flex-start;
+	align-items: stretch;
+	align-content: stretch;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -87,4 +98,33 @@ ul{
   min-height: 35px;
   box-shadow: 0px 5px 0px rgb(207, 189, 189);
 }
+
+.logo img{
+  width: 100%;
+  max-width: 200px;
+}
+.logo{
+  display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+  margin: 0;
+  padding: 0;
+  width: 25%;
+  height: 50%;
+  max-width: fit-content;
+}
+
+.sectionTitle{
+  margin-left: 5%;
+  display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+}
+
 </style>
