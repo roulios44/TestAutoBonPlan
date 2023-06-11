@@ -5,11 +5,11 @@
             <p>Bonjour ! Nous sommes <strong>{{ days[new Date().getDay()] }}</strong></p><br>
         </div>
         <div class="stats">
-            <div class="callReceive">
+            <div class="callReceive" v-if="weeklyCompare">
                 <p>TOTAL APPELS REÇUS</p> <br>
                 <h1>{{totalCallReceive}} ({{ evolTotalCall}})</h1>
             </div>
-            <div class="callTake">
+            <div class="callTake" v-if="weeklyCompare">
                 <p>TOTAL PRISE EN CHARGE</p>
                 <h1>{{percentCallTake}}% ({{ evolCallTake }}%)</h1>
             </div>
