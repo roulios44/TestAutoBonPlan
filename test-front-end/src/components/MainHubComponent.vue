@@ -86,17 +86,22 @@ export default{
             chartOptions: {
                 title: "Nombre d'appels reçus par concession",
                 'width':"max",
-                'height':500
+                'height':500,
+                series:{
+                    0:{color: "#0f97d1"},
+                }
             },
 
             callTakenChartData: null,
             callTakenChartOptions : {
-                    title: "Appels prit par concession (En %)",
-                    'width':"max",
-                    'height':1000
-            }
-      
+                title: "Appels prit par concession (En %)",
+                'width':"max",
+                'height':1000,
 
+                series:{
+                0:{color: "#0f97d1"},
+                }
+            }
 
         }
     },
