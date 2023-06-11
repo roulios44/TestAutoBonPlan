@@ -1,5 +1,5 @@
 <template>
-    <div style="display: flex; justify-content: center; align-items: center;">
+    <div class="container">
       <div class="login-form">
         <h1>Login</h1>
 
@@ -13,6 +13,7 @@
 
         <input type="button" value="Sign-in" v-on:click="connectUser()"/>
       </div>
+      <p style="cursor: pointer;" v-on:click="$router.push('/register')">Pas encore de compte ? Cliquer ici</p>
     </div>
 </template>
 <script>
@@ -37,7 +38,10 @@ export default{
           }
           const req = await axios.post("http://localhost/user/login",userData)
           const res = await req.data
-          localStorage.setItem("idConnectedUser",res)
+          console.log(res)
+          localStorage.setItem("userID",res[0].id)
+          localStorage.setItem("canAdd",res[0].canAdd)
+          this.$router.push("/mainHub")
         } else this.errorMessage = "Please fill all fields"
       },
       checkAllFieldsFill(){
@@ -54,5 +58,14 @@ export default{
   flex-direction: column;
   width: 50%;
   margin-top: 6%;
+}
+.container{
+  display: flex;
+  justify-content: center; 
+  align-items: center;
+  display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-content: center;
 }
 </style>

@@ -8,14 +8,14 @@
         <div class="stats">
             <div class="callReceive">
                 <p>TOTAL APPELS REÇUS</p> <br>
-                <h1>200</h1>
+                <h1>{{totalCallReceive}} ({{ evolTotalCall}})</h1>
             </div>
             <div class="callTake">
                 <p>TOTAL PRISE EN CHARGE</p>
-                <h1>56%</h1>
+                <h1>{{percentCallTake}}% ({{ evolCallTake }}%)</h1>
             </div>
         </div>
-        <div class="uploadFile">
+        <div class="uploadFile" v-if="canAdd" >
             <input type="file" name="csvFile" accept=".csv" v-on:change="takeFile" placeholder="">
             <p style="color: red">{{ errorMessage }}</p>
             <button v-if="dataJSON!=null" v-on:click="sendDataCSV()">Send CSV</button>
@@ -65,6 +65,7 @@ import { GChart } from 'vue-google-charts'
 export default{
     data(){
         return{
+            canAdd:false,
             file: null,
             dataJSON:null,
             errorMessage:"",
@@ -76,16 +77,18 @@ export default{
             firstDateIn:true,
             secondDateIn:true,
             dataCall:null,
-
+            totalCallReceive:0,
+            evolTotalCall:0,
+            percentCallTake:0,
+            evolCallTake:0,
             weeklyCompare:false,
             chartData: null,
             chartOptions: {
-                title: "Nombre d'ppels Reçus par concession",
+                title: "Nombre d'appels reçus par concession",
             },
 
             callTakenChartData: null,
             callTakenChartOptions : {
-                    
                     title: "Appels prit par concession (En %)",
                     'width':800,
                     'height':1000
@@ -125,10 +128,11 @@ export default{
                 const data = {"arrayJSON":this.dataJSON}
                 const req = await axios.post("http://localhost/calls",data)
                 const res = await req.data
-                console.log(res)
+                res
             }else{
                 this.errorMessage = "Please choose a file before adding it"
             }
+            await this.getAllDates();
         },
         async getAllDates(){
             const req = await axios.get("http://localhost/date")
@@ -163,8 +167,11 @@ export default{
             }
         },
         async getData(){
-            const req = await axios.get("http://localhost/calls/day/" + this.firstDate + "/" + this.secondDate);
-            console.log("http://localhost/calls/day/" + this.firstDate + "/" + this.secondDate)
+            let stringAPi = "http://localhost/calls"
+            if(this.weeklyCompare) stringAPi += "/week/"
+            else stringAPi += "/day/"
+            stringAPi += this.firstDate + "/" + this.secondDate
+            const req = await axios.get(stringAPi);
             const res = await req.data
             this.dataCall = await res
             await this.callReceiveChart();
@@ -173,26 +180,36 @@ export default{
         async callReceiveChart(){
             let graphData = []
             let callTaken = []
+            let firstDateCallTaken = 0;
+            let secondDateCallTaken = 0;
+
+            this.totalCallReceive = this.dataCall[1].length 
+            this.evolTotalCall = this.dataCall[1].length - this.dataCall[0].length 
             this.dataCall[0].forEach(call => {
                 if(callTaken.find(item=>item.label===call.salePoint)){
                     const index = callTaken.findIndex(item=>item.label===call.salePoint)
                     if(call.duration==="00:00:00")callTaken[index].firstDateNoTake++
-                    else callTaken[index].firstDateTake++
+                    else{
+                        callTaken[index].firstDateTake++
+                        firstDateCallTaken++
+                    } 
                 }else{
-                    if(call.duration==="00:00:00"){
-                        callTaken.push({
-                        label:call.salePoint,
-                        "firstDateNoTake":1,
-                        "firstDateTake":0,
-                    })
-                    }else{
-                        callTaken.push({
+                    callTaken.push({
                         label:call.salePoint,
                         "firstDateNoTake":0,
-                        "firstDateTake":1,
+                        "firstDateTake":0,
+                        "seconDateNoTake":0,
+                        "secondDateTake":0,
                     })
-                    }
+                    if(call.duration==="00:00:00")callTaken[callTaken.length-1].firstDateNoTake++
+                    else{
+                        callTaken[callTaken.length-1].firstDateTake++
+                        firstDateCallTaken++
+                    } 
                 }
+
+
+
                 if(graphData.find(item=>item.label===call.salePoint)){
                     graphData[graphData.findIndex(item=>item.label===call.salePoint)].firstDateCall++
                 }
@@ -203,29 +220,45 @@ export default{
                             "firstDate": this.firstDate,
                             "firstDateCall": 1,
                             "secondDateCall":0,
+                            "secondDate": this.secondDate,
                         })
                 }
             });
+
+
+
+
             this.dataCall[1].forEach(call => {
+
+
+
+
                 if(callTaken.find(item=>item.label===call.salePoint)){
                     const index = callTaken.findIndex(item=>item.label===call.salePoint)
                     if(call.duration==="00:00:00")callTaken[index].secondDateNoTake++
-                    else callTaken[index].secondDateTake++
+                    else{
+                       callTaken[index].secondDateTake++ 
+                       secondDateCallTaken++
+                    } 
                 }else{
-                    if(call.duration==="00:00:00"){
-                        callTaken.push({
+                    callTaken.push({
                         label:call.salePoint,
-                        "secondDateNoTake":1,
+                        "firstDateNoTake":0,
+                        "firstDateTake":0,
+                        "seconDateNoTake":0,
                         "secondDateTake":0,
                     })
-                    }else{
-                        callTaken.push({
-                        label:call.salePoint,
-                        "secondDateNoTake":0,
-                        "secondDateTake":1,
-                    })
-                    }
+                    if(call.duration==="00:00:00")callTaken[callTaken.length-1].seconDateNoTake++
+                    else{
+                        callTaken[callTaken.length-1].secondDateTake++
+                        secondDateCallTaken++
+                    } 
                 }
+
+
+
+
+
                 if(graphData.find(item=>item.label===call.salePoint)){
                     graphData[graphData.findIndex(item=>item.label===call.salePoint)].secondDateCall++
                 }
@@ -233,21 +266,24 @@ export default{
                     graphData.push(
                         {
                             "label": call.salePoint,
+                            "firstDate": this.firstDate,
                             "secondDate": this.secondDate,
-                            "secondDateCall": 1
+                            "firstDateCall": 0,
+                            "secondDateCall":1,
                         })
                 }
             });
+            this.percentCallTake = Math.round((secondDateCallTaken/this.totalCallReceive) *100)
+            this.evolCallTake = this.percentCallTake - Math.round((firstDateCallTaken/this.dataCall[0].length)*100)
             await this.makeGraph(graphData,callTaken)
         },
         async makeGraph(graphData,callTaken){
             graphData.forEach(call => {
                 if(call.secondDate==null)call.secondDate = this.secondDate
-                if(call.secondDateCall==null)call.secondDateCall = 0;
                 if(call.firstDate==null)call.firstDate = this.firstDate
+                if(call.secondDateCall==null)call.secondDateCall = 0;
                 if(call.firstDateCall==null)call.firstDateCall = 0
             });
-
             callTaken.forEach(call=>{
                 if(!call.secondDateTake)call.secondDateTake = 0
                 if(!call.secondDateNoTake)call.secondDateNoTake = 0;
@@ -262,13 +298,16 @@ export default{
             this.callTakenChartData = []
             this.callTakenChartData.push(["Concession",this.firstDate,this.secondDate])
             callTaken.forEach(call=>{
-                const firstDatePercent = call.firstDateTake / (call.firstDateNoTake+call.firstDateTake)
-                const secondDatePercent = call.secondDateTake / (call.secondDateNoTake+call.secondDateTake)
-                this.callTakenChartData.push([call.label,Math.round(firstDatePercent*100),Math.round(secondDatePercent*100)])
+                    const firstDatePercent = Math.round(call.firstDateTake / (call.firstDateNoTake+call.firstDateTake)*100)
+                    const secondDatePercent = Math.round(call.secondDateTake / (call.secondDateNoTake+call.secondDateTake)*100)
+                    this.callTakenChartData.push([call.label,firstDatePercent,secondDatePercent])
             })
         }
     },
     async mounted(){
+        if(!localStorage.getItem("userID")) this.$router.push("/login")
+        if(localStorage.getItem("canAdd")==true)this.canAdd = true
+        else this.canAdd = false
         const date = new Date()
         this.today = date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear()
         await this.getAllDates()

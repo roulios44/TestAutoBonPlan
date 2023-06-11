@@ -8,7 +8,7 @@
 
     <transition name="slide">
       <ul v-if="showMenu" class="menu">
-        <li>Disconnected</li>
+        <li style="cursor:pointer" v-on:click="disconnect()">Se déconnecter</li>
       </ul>
     </transition>
     <div class="logo">
@@ -30,6 +30,10 @@ export default {
   methods: {
     toggleMenu() {
       this.showMenu = !this.showMenu;
+    },
+    disconnect(){
+      localStorage.setItem("userID",null)
+      this.$router.push("login")
     }
   }
 };

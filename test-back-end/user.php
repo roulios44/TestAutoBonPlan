@@ -23,7 +23,7 @@ switch($request_method){
                         else{
                             $encryptPasword = $dataUser[0]["password"];
                             if(password_verify($password,$encryptPasword)){
-                                echo($dataUser[0]["id"]);
+                                echo(json_encode($dataUser));
                             }else{
                                 echo("false");
                             }
@@ -37,6 +37,7 @@ switch($request_method){
                         $canAdd = $decode["canAdd"];
                         $user = new User($name,$surname,$email,$password,$canAdd);
                         $user->addUser();
+                        echo(true);
                         break;
                 }
             }

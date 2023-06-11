@@ -26,7 +26,7 @@
 
         <p style="color: red">{{ errorMessage }}</p>
 
-        <input type="button" value="Sign-in" v-on:click="createUser()"/>
+        <input type="button" value="Register" v-on:click="createUser()"/>
       </div>
     </div>
 </template>
@@ -63,6 +63,7 @@ export default{
           const req = await axios.post("http://localhost/user/register",userData)
           const res = await req.data
           console.log(res)
+          if(res==true)this.$router.push("/login")
         } else if(!this.checkPassword())this.errorMessage = "Password / Password verification are not the same"
         else this.errorMessage = "Please fill all fields"
       },
