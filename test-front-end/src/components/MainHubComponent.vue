@@ -3,7 +3,6 @@
     <div class="headInfo">
         <div class="welcomeMessage">
             <p>Bonjour ! Nous sommes <strong>{{ days[new Date().getDay()] }}</strong></p><br>
-            <p>Voici ce qui a changé depuis {{ days[new Date().getDay()] }} dernier</p>
         </div>
         <div class="stats">
             <div class="callReceive">
@@ -21,7 +20,7 @@
             <button v-if="dataJSON!=null" v-on:click="sendDataCSV()">Send CSV</button>
         </div>
     </div>
-    <div>
+    <div class="choseDates">
 
         <label>Comparer des semaines ? (par défaut ce sont des jours qui seront comparés)</label><br>
         <input type="radio" v-bind:value="true" v-model="weeklyCompare" />
@@ -36,15 +35,15 @@
         <input type="date" v-model="secondDate" name="secondDate" v-on:change="checkIfDateAvalaible(secondDate,false)"><br>
         <p v-if="!secondDateIn">Cette date na pas encore d'entrée dans la base de donnée</p>
         <button v-if="firstDateIn && secondDateIn && firstDate && secondDate" v-on:click="getData">Confirm</button>
-        <div class="chart">
+        
+    </div>
+    <div>
             <GChart
                 v-if="dataCall"
                 type="ColumnChart"
                 :data="chartData"
                 :options="chartOptions"
             />
-        </div>
-        <div>
             <GChart
                 v-if="callTakenChartData"
                 type="BarChart"
@@ -52,7 +51,8 @@
                 :options="callTakenChartOptions"
             />
         </div>
-    </div>
+        <div>
+        </div>
 </template>
 <script>
 import axios from 'axios';
@@ -85,12 +85,14 @@ export default{
             chartData: null,
             chartOptions: {
                 title: "Nombre d'appels reçus par concession",
+                'width':"max",
+                'height':500
             },
 
             callTakenChartData: null,
             callTakenChartOptions : {
                     title: "Appels prit par concession (En %)",
-                    'width':800,
+                    'width':"max",
                     'height':1000
             }
       
@@ -373,6 +375,13 @@ export default{
 	align-content: space-between;
     height: 100%;
     width: 20%;
+}
+
+.choseDates{
+    display: flex;
+	flex-direction: column;
+    max-width: 15%;
+    margin: 2%;
 }
 
 </style>
