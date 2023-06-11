@@ -32,7 +32,7 @@ export default {
       this.showMenu = !this.showMenu;
     },
     disconnect(){
-      localStorage.setItem("userID",null)
+      localStorage.removeItem("userID")
       this.$router.push("login")
     }
   }

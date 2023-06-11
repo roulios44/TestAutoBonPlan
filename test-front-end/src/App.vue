@@ -4,9 +4,7 @@
 <script>
 </script>
 <style>
-#app{
-  
-}
+
 html{
   display: flex;
 	flex-direction: column;
