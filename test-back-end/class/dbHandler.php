@@ -184,7 +184,7 @@ class DBHandler
      * This function retrieves all distinct dates from a database table and returns them in descending
      * order.
      * 
-     * @return an array of distinct dates in the format of 'YYYY-MM-DD' from the 'call' table in
+     * @return // an array of distinct dates in the format of 'YYYY-MM-DD' from the 'call' table in
      * descending order.
      */
     public function getAllDates(){
