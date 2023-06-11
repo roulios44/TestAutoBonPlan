@@ -125,6 +125,12 @@ export default{
             }
         });
         },
+        // The above code is defining an asynchronous function called `sendDataCSV()`. This function
+        // first checks if `this.dataJSON` is not null. If it is not null, it creates an object called
+        // `data` with a property called `arrayJSON` that is set to the value of `this.dataJSON`. It
+        // then sends a POST request to the URL "http://localhost/calls" with the `data` object as the
+        // request body using the Axios library. The response from the server is stored in the `res`
+        // variable. If `this.dataJSON` is null, it sets an
         async sendDataCSV(){
             if(this.dataJSON!=null){
                 const data = {"arrayJSON":this.dataJSON}
@@ -136,6 +142,11 @@ export default{
             }
             await this.getAllDates();
         },
+        // The above code is defining an asynchronous method called `getAllDates()` in a Vue component.
+        // This method sends a GET request to the "http://localhost/date" endpoint using Axios and
+        // awaits the response. It then loops through the response data using the `forEach()` method
+        // and formats each date using another asynchronous method called `formatDate()`. The formatted
+        // dates are then stored in the `allDates` data property of the Vue component.
         async getAllDates(){
             const req = await axios.get("http://localhost/date")
             const res = await req.data
@@ -144,6 +155,11 @@ export default{
             });
             this.allDates = res
         },
+        // The above code defines an asynchronous function called `formatDate` that takes in a `date`
+        // parameter. Inside the function, it extracts the year, month, and day from the `date` object
+        // and formats them as a string in the format "YYYY-MM-DD". The `padStart` method is used to
+        // ensure that the month and day values are always two digits long, with leading zeros added if
+        // necessary. The function then returns the formatted date string.
         async formatDate(date) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -168,6 +184,7 @@ export default{
                 else this.secondDateIn = false
             }
         },
+        // The above code is defining an asynchronous method called `getData()` in a Vue component.
         async getData(){
             let stringAPi = "http://localhost/calls"
             if(this.weeklyCompare) stringAPi += "/week/"
@@ -175,16 +192,15 @@ export default{
             stringAPi += this.firstDate + "/" + this.secondDate
             const req = await axios.get(stringAPi);
             const res = await req.data
+            // Here , dataCall is a array of 2 slice, each slice contains all calls info from 1st or 2nds date
             this.dataCall = await res
-            await this.callReceiveChart();
-            
+            await this.callReceiveChart(); 
         },
         async callReceiveChart(){
             let graphData = []
             let callTaken = []
             let firstDateCallTaken = 0;
             let secondDateCallTaken = 0;
-
             this.totalCallReceive = this.dataCall[1].length 
             this.evolTotalCall = this.dataCall[1].length - this.dataCall[0].length 
             this.dataCall[0].forEach(call => {
@@ -209,12 +225,7 @@ export default{
                         firstDateCallTaken++
                     } 
                 }
-
-
-
-                if(graphData.find(item=>item.label===call.salePoint)){
-                    graphData[graphData.findIndex(item=>item.label===call.salePoint)].firstDateCall++
-                }
+                if(graphData.find(item=>item.label===call.salePoint))graphData[graphData.findIndex(item=>item.label===call.salePoint)].firstDateCall++
                 else{
                     graphData.push(
                         {
@@ -226,15 +237,7 @@ export default{
                         })
                 }
             });
-
-
-
-
             this.dataCall[1].forEach(call => {
-
-
-
-
                 if(callTaken.find(item=>item.label===call.salePoint)){
                     const index = callTaken.findIndex(item=>item.label===call.salePoint)
                     if(call.duration==="00:00:00")callTaken[index].secondDateNoTake++
@@ -256,11 +259,6 @@ export default{
                         secondDateCallTaken++
                     } 
                 }
-
-
-
-
-
                 if(graphData.find(item=>item.label===call.salePoint)){
                     graphData[graphData.findIndex(item=>item.label===call.salePoint)].secondDateCall++
                 }
@@ -280,6 +278,7 @@ export default{
             await this.makeGraph(graphData,callTaken)
         },
         async makeGraph(graphData,callTaken){
+            // Here we verify if  every part of each array of object have all required fields
             graphData.forEach(call => {
                 if(call.secondDate==null)call.secondDate = this.secondDate
                 if(call.firstDate==null)call.firstDate = this.firstDate
@@ -293,6 +292,7 @@ export default{
                 if(!call.firstDateTake)call.firstDateTake = 0
             })
             this.chartData = []
+            // Here we push into the array of data of chart to create a chart
             this.chartData.push(["Concession",this.firstDate,this.secondDate])
             graphData.forEach(call => {
                 this.chartData.push([call.label,call.firstDateCall,call.secondDateCall])

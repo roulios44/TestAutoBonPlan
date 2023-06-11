@@ -43,8 +43,5 @@ switch($request_method){
             }
         }
         break;
-    case "GET":
-        echo"GETTING" ;
-        break;
 }
 ?>

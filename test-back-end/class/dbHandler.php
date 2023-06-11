@@ -1,5 +1,9 @@
 <?php
 /* The DBHandler class sets up the database connection parameters. */
+
+/**
+ * In the DBHandler class, they are some unuse methods, they are here for futurs features
+ */
 class DBHandler
 {
     private $name;
@@ -160,6 +164,15 @@ class DBHandler
      * @param string condition The value to search for in the specified row of the table. This value
      * will be used to determine which row(s) to delete from the table.
      */
+    /**
+     * This PHP function deletes a row from a specified table based on a given condition.
+     * 
+     * @param string table The name of the table from which the row needs to be deleted.
+     * @param string rowToSearch The name of the column in the table that will be used to search for
+     * the row to be deleted.
+     * @param string condition The value to search for in the specified row of the table. This is used
+     * to identify the specific row to be deleted.
+     */
     public function delete(string $table, string $rowToSearch,string $condition){
         $db = $this->connect();
         $stmt = $db->prepare("DELETE FROM $table WHERE $rowToSearch = ?");
@@ -167,6 +180,13 @@ class DBHandler
         mysqli_close($db) ;
     }
 
+    /**
+     * This function retrieves all distinct dates from a database table and returns them in descending
+     * order.
+     * 
+     * @return an array of distinct dates in the format of 'YYYY-MM-DD' from the 'call' table in
+     * descending order.
+     */
     public function getAllDates(){
         $db = $this->connect();
         $query = "SELECT DISTINCT DATE_FORMAT(date, '%Y-%m-%d') AS 'date' FROM `call` ORDER BY DATE(date) DESC;";
