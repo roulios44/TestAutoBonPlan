@@ -172,6 +172,7 @@ export default{
             return `${year}-${month}-${day}`;
         },
         async checkIfDateAvalaible(date,isFirst){
+            console.log(date)
             if(this.allDates.includes(date)){
                 if(this.weeklyCompare){
                     const dateParts = date.split("-");
@@ -189,7 +190,9 @@ export default{
                 else this.secondDateIn = false
             }
         },
-        // The above code is defining an asynchronous method called `getData()` in a Vue component.
+        /**
+         * getDate is a func that getting the data from the PHP back-end
+         */
         async getData(){
             let stringAPi = "http://localhost/calls"
             if(this.weeklyCompare) stringAPi += "/week/"
@@ -285,10 +288,10 @@ export default{
         async makeGraph(graphData,callTaken){
             // Here we verify if  every part of each array of object have all required fields
             graphData.forEach(call => {
-                if(call.secondDate==null)call.secondDate = this.secondDate
-                if(call.firstDate==null)call.firstDate = this.firstDate
-                if(call.secondDateCall==null)call.secondDateCall = 0;
-                if(call.firstDateCall==null)call.firstDateCall = 0
+                if(!call.secondDate)call.secondDate = this.secondDate
+                if(!call.firstDate)call.firstDate = this.firstDate
+                if(!call.secondDateCall)call.secondDateCall = 0;
+                if(!call.firstDateCall)call.firstDateCall = 0
             });
             callTaken.forEach(call=>{
                 if(!call.secondDateTake)call.secondDateTake = 0
@@ -309,15 +312,34 @@ export default{
                     const secondDatePercent = Math.round(call.secondDateTake / (call.secondDateNoTake+call.secondDateTake)*100)
                     this.callTakenChartData.push([call.label,firstDatePercent,secondDatePercent])
             })
-        }
+        },
+        goodFormatToday(){
+            const date = new Date();
+            const annee = date.getFullYear();
+            const mois = String(date.getMonth() + 1).padStart(2, '0');
+            const jour = String(date.getDate()).padStart(2, '0');
+            const dateFormatee = `${annee}-${mois}-${jour}`;
+            return dateFormatee;
+        },
+        async thisWeek(){
+            this.today = this.goodFormatToday()
+            this.secondDate = this.today
+            const dateEnd = new Date()
+            this.firstDate  = await this.formatDate(new Date(dateEnd.setDate(dateEnd.getDate()-7)))
+            this.weeklyCompare = true
+            await this.checkIfDateAvalaible(this.firstDate,true)
+            await this.checkIfDateAvalaible(this.secondDate,false)
+            if(this.firstDateIn && this.secondDateIn){
+                await this.getData()
+            }
+        },
     },
     async mounted(){
         if(!localStorage.getItem("userID")) this.$router.push("/login")
         if(localStorage.getItem("canAdd")==true)this.canAdd = true
         else this.canAdd = false
-        const date = new Date()
-        this.today = date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear()
         await this.getAllDates()
+        await this.thisWeek()
     }
 }
 </script>
