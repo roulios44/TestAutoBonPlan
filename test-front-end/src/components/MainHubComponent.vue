@@ -30,10 +30,10 @@
         <label v-if="weeklyCompare">A noter: les jours choisis correspondent aux 1er jours de la semaine à étudier</label><br v-if="weeklyCompare">
         <label for="firstDate">Choisisez la 1ere date à comparer</label>
         <input type="date" v-model="firstDate" name="firstDate" v-on:change="checkIfDateAvalaible(firstDate,true)"><br>
-        <p v-if="!firstDateIn">Cette date na pas encore d'entrée dans la base de donnée</p>
+        <p v-if="!firstDateIn">Cette date n'a pas encore d'entrée dans la base de donnée</p>
         <label for="secondDate">Choisisez la 2eme date à comparer</label>
         <input type="date" v-model="secondDate" name="secondDate" v-on:change="checkIfDateAvalaible(secondDate,false)"><br>
-        <p v-if="!secondDateIn">Cette date na pas encore d'entrée dans la base de donnée</p>
+        <p v-if="!secondDateIn">Cette date n'a pas encore d'entrée dans la base de donnée</p>
         <button v-if="firstDateIn && secondDateIn && firstDate && secondDate" v-on:click="getData">Confirm</button>
         
     </div>
@@ -321,12 +321,11 @@ export default{
             const dateFormatee = `${annee}-${mois}-${jour}`;
             return dateFormatee;
         },
-        async thisWeek(){
+        async compareToday(){
             this.today = this.goodFormatToday()
             this.secondDate = this.today
             const dateEnd = new Date()
             this.firstDate  = await this.formatDate(new Date(dateEnd.setDate(dateEnd.getDate()-7)))
-            this.weeklyCompare = true
             await this.checkIfDateAvalaible(this.firstDate,true)
             await this.checkIfDateAvalaible(this.secondDate,false)
             if(this.firstDateIn && this.secondDateIn){
@@ -339,7 +338,7 @@ export default{
         if(localStorage.getItem("canAdd")==true)this.canAdd = true
         else this.canAdd = false
         await this.getAllDates()
-        await this.thisWeek()
+        await this.compareToday()
     }
 }
 </script>
